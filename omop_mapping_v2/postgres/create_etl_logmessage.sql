@@ -13,13 +13,29 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-create table etl.load_info
+
+create table if not exists etl.load_info
 (
     load_id serial,
     load_name       varchar(100),
     load_description    varchar(1000),
     status          int
 );
+
+create or replace function etl.start_etl_load( p_load_name varchar(100), p_load_description varchar(1000))
+  returns integer
+  language plpgsql
+as
+$body$
+begin
+  insert into etl.load_info( load_id, load_name, load_description, status )
+    values( default, p_load_name, p_load_description, 0)
+  returning load_id;
+
+end;
+$body$
+;
+
 
 CREATE OR REPLACE FUNCTION etl.startfile(filename character varying, load_id integer)
   RETURNS void
@@ -33,14 +49,15 @@ BEGIN
 END;
 $body$
 ;
-    create table etl.logmessage
-    (
-      msg_id serial,
-     logtime timestamp default clock_timestamp(),
-     process varchar(50),
-     step  varchar(200),
-     details varchar(200)
-    );
+
+create table if not exists etl.logmessage
+(
+  msg_id serial,
+  logtime timestamp default clock_timestamp(),
+  process varchar(50),
+  step  varchar(200),
+  details varchar(200)
+);
 
 CREATE OR REPLACE FUNCTION etl.logm(process character varying, step character varying, details integer)
   RETURNS void

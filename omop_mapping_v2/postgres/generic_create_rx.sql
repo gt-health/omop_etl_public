@@ -85,7 +85,7 @@ from
 (
     select
     	p.person_id as person_id,
-    	coalesce(tar.concept_id, 0 ) as drug_concept_id,
+    	coalesce(src.tar_concept_id, 0 ) as drug_concept_id,
     	s.drug_start_date  as drug_exposure_start_date,
     	s.drug_end_date as  drug_exposure_end_date,
     	coalesce(cast(s.drug_source_type_value as int),0) as drug_type_concept_id,
@@ -99,7 +99,7 @@ from
     	coalesce( pr.provider_id, 0 )  as provider_id,
     	v.visit_occurrence_id as visit_occurrence_id,
     	s.drug_source_value as drug_source_value,
-    	coalesce( src.concept_id, 0) as drug_source_concept_id,
+    	coalesce( src.src_concept_id, 0) as drug_source_concept_id,
     	s.route_source_value as route_source_value,
       s.dose_unit_source_value as dose_unit_source_value
       , s.id as x_srcid
@@ -108,16 +108,8 @@ from
     from etl.stage_rx_temp s
     join omop.person p on p.person_source_value = s.person_source_value
     left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-    left join omop.concept src on s.drug_source_value = replace(src.concept_code, '.', '' )
-        and src.domain_id like '%Drug%'
-        and coalesce(s.drug_source_type, src.vocabulary_id ) = src.vocabulary_id
-        and src.invalid_reason is null
-    left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-        and cr.relationship_id = 'Maps to'
-        and cr.invalid_reason is null
-    left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-        and tar.standard_concept = 'S'
-        and tar.invalid_reason is null
+    left join omop.concept_drug src on s.drug_source_value = src.clean_concept_code
+        and coalesce(s.drug_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
     left join omop.concept dose on s.dose_unit_source_value = dose.concept_code    ---should be for effective_drug_dose
         and dose.domain_id = 'Unit'
         and dose.invalid_reason is null

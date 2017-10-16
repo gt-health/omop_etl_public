@@ -78,23 +78,23 @@ begin
      (
         select
            p.person_id as person_id,
-           coalesce( tar.concept_id, 0 ) as measurement_concept_id,
+           coalesce( src.tar_concept_id, 0 ) as measurement_concept_id,
            s.measurement_date as measurement_date,
-            trim( to_char(extract( hour from s.measurement_date ), '09') ) || ':' ||
-              trim( to_char( extract( minute from s.measurement_date ), '09') ) || ':' ||
-              trim( to_char(extract( second from s.measurement_date ), '09') )
+           trim( to_char(extract( hour from s.measurement_date ), '09') ) || ':' ||
+            trim( to_char( extract( minute from s.measurement_date ), '09') ) || ':' ||
+            trim( to_char(extract( second from s.measurement_date ), '09') )
            as measurement_time,
            cast( coalesce( s.measurement_source_type_value ,'44818702') as int)  as measurement_type_concept_id,  -- default "from lab result"
            coalesce( oper.concept_id, 0 ) as operator_concept_id,
            cast(s.value_as_number as numeric ) as value_as_number,
-           coalesce( val.concept_id, 0 ) as value_as_concept_id,
+           coalesce( src.val_concept_id, 0 ) as value_as_concept_id,
            coalesce(tarunit.concept_id, 0) as  unit_concept_id,
            s.range_low as range_low,
            s.range_high as range_high,
            pr.provider_id as provider_id,
            v.visit_occurrence_id as visit_occurrence_id,
            s.measurement_source_value as measurement_source_value,
-           coalesce( src.concept_id, 0 ) as measurement_source_concept_id,
+           coalesce( src.src_concept_id, 0 ) as measurement_source_concept_id,
            s.unit_source_value as unit_source_value,
            s.value_source_value as value_source_value
            , s.id as x_srcid
@@ -103,23 +103,8 @@ begin
         from etl.stage_lab_temp s
         join omop.person p on p.person_source_value = s.person_source_value
         left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-        left join omop.concept src on s.measurement_source_value = src.concept_code   -- loinc has dashes
-            and src.domain_id like '%Meas%'
-            and coalesce(s.measurement_source_type, src.vocabulary_id ) = src.vocabulary_id
-            and src.invalid_reason is null
-        left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-            and cr.relationship_id = 'Maps to'
-            and cr.invalid_reason is null
-        left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-            and tar.standard_concept = 'S'
-            and tar.invalid_reason is null
-        left join omop.concept_relationship crv on src.concept_id = crv.concept_id_1
-            and crv.relationship_id = 'Maps to value'
-            and crv.invalid_reason is null
-        left join omop.concept val on crv.concept_id_2 = val.concept_id
-            and val.standard_concept = 'S'
-            and val.domain_id = 'Meas Value'
-            and val.invalid_reason is null
+        left join omop.concept_measurement src on s.measurement_source_value = src.raw_concept_code   -- loinc has dashes
+            and coalesce(s.measurement_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
         left join omop.concept oper on s.operator_source_value = oper.concept_code
             and oper.domain_id = 'Meas Value Operator'
             and oper.standard_concept = 'S'
@@ -190,7 +175,7 @@ begin
     (
       select 
           p.person_id as person_id,
-          coalesce( tar.concept_id, 0 ) as observation_concept_id,
+          coalesce( src.tar_concept_id, 0 ) as observation_concept_id,
           s.measurement_date as observation_date,
           trim( to_char(extract( hour from s.measurement_date ), '09') ) || ':' ||
             trim( to_char( extract( minute from s.measurement_date ), '09') ) || ':' ||
@@ -199,12 +184,12 @@ begin
           coalesce( cast(s.measurement_source_type_value as int), 38000280 )  as observation_type_concept_id,
           cast( s.value_as_number as numeric ) as value_as_number,
           s.value_as_string as value_as_string,
-          coalesce(val.concept_id,0) as value_as_concept_id,
+          coalesce(src.val_concept_id,0) as value_as_concept_id,
           coalesce(tarunit.concept_id ,0) as unit_concept_id,
           pr.provider_id as provider_id,
           v.visit_occurrence_id as visit_occurrence_id,
           s.measurement_source_value as observation_source_value,
-          coalesce(src.concept_id, 0) as observation_source_concept_id,
+          coalesce(src.src_concept_id, 0) as observation_source_concept_id,
           s.unit_source_value as unit_source_value,
           null as qualifier_source_value,
           s.id as x_srcid,
@@ -213,23 +198,8 @@ begin
       from etl.stage_lab_temp s
       join omop.person p on p.person_source_value = s.person_source_value
       left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-      join omop.concept src on s.measurement_source_value = src.concept_code   -- loinc has dashes  -- measurement is the master tables, so only insert mapped concepts
-          and src.domain_id like '%Obs%'
-          and coalesce(s.measurement_source_type, src.vocabulary_id ) = src.vocabulary_id
-          and src.invalid_reason is null
-      left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-          and cr.relationship_id = 'Maps to'
-          and cr.invalid_reason is null
-      left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-          and tar.standard_concept = 'S'
-          and tar.invalid_reason is null
-      left join omop.concept_relationship crv on src.concept_id = crv.concept_id_1
-          and crv.relationship_id = 'Maps to value'
-          and crv.invalid_reason is null
-      left join omop.concept val on crv.concept_id_2 = val.concept_id
-          and val.standard_concept = 'S'
-          and val.domain_id = 'Meas Value'
-          and val.invalid_reason is null
+      join omop.concept_observation src on s.measurement_source_value = src.raw_concept_code   -- loinc has dashes
+            and coalesce(s.measurement_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
       left join omop.concept srcunit on s.unit_source_value = srcunit.concept_code
           and srcunit.domain_id = 'Unit'
           and srcunit.invalid_reason is null

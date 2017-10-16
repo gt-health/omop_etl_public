@@ -273,7 +273,8 @@ $$
         get diagnostics rowcnt = ROW_COUNT;
         perform etl.logm('qa_lab_load', 'unmapped records removed that were mapped in other tables: ' , rowcnt );
 
-        insert into etl.stage_lab_error
+        -- move to etl.stage permanent home
+        insert into etl.stage_lab
         (
             id,
             measurement_source_type,

@@ -64,7 +64,7 @@ begin
         (
             select distinct
                 p.person_id as person_id
-                , coalesce(tar.concept_id, 0 ) as condition_concept_id
+                , coalesce(src.tar_concept_id, 0 ) as condition_concept_id
                 , s.start_date as condition_start_date
                 , s.end_date as condition_end_date
                 , cast(s.condition_source_type_value as int) as condition_type_concept_id
@@ -72,23 +72,15 @@ begin
                 , coalesce( pr.provider_id, v.provider_id, 0 ) as provider_id
                 , coalesce( v.visit_occurrence_id, 0 ) as visit_occurrence_id
                 , s.condition_source_value as condition_source_value
-                , coalesce(src.concept_id, 0) as condition_source_concept_id
+                , coalesce(src.src_concept_id, 0) as condition_source_concept_id
                 , s.id as x_srcid
-		, s.load_id as x_srcloadid
+		        , s.load_id as x_srcloadid
                 , 'STAGE_CONDITION' as x_srcfile
             from etl.stage_condition_temp s
             join omop.person p on p.person_source_value = s.person_source_value
             left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-            left join omop.concept src on s.condition_source_value = replace(src.concept_code, '.', '' )
-              			and src.domain_id like '%Condition%'
-              			and coalesce(s.condition_code_source_type, src.vocabulary_id ) = src.vocabulary_id
-              			and src.invalid_reason is null
-            left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-              			and cr.relationship_id = 'Maps to'
-              			and cr.invalid_reason is null
-            left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-              			and tar.standard_concept = 'S'
-              			and tar.invalid_reason is null
+            left join omop.concept_condition src on s.condition_source_value = src.clean_concept_code
+                and coalesce(s.condition_code_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
             left join omop.provider pr on s.provider_source_value = pr.provider_source_value
 		where s.start_date is not null
 		and s.load_id = v_loadid
@@ -137,39 +129,25 @@ begin
         (
             select distinct
                 p.person_id as person_id
-                , coalesce(tar.concept_id, 0 )  as measurement_concept_id
+                , coalesce(src.tar_concept_id, 0 )  as measurement_concept_id
                 , s.start_date as measurement_date
                 , 44818701 as measurement_type_concept_id  -- 'From physical examination' -- TODO: may need to be changed
-                , val.concept_id as value_as_concept_id
+                , src.val_concept_id as value_as_concept_id
                 , v.visit_occurrence_id as visit_occurrence_id
                 , s.condition_source_value as measurement_source_value
-                , coalesce(tar.concept_id, 0) as measurement_source_concept_id
+                , coalesce(src.src_concept_id, 0) as measurement_source_concept_id
                 , pr.provider_id
                 , s.id as x_srcid
-		, s.load_id as x_srcloadid
+                , s.load_id as x_srcloadid
                 , 'STAGE_CONDITION' as x_srcfile
             from etl.stage_condition_temp s
             join omop.person p on p.person_source_value = s.person_source_value
             left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-            join omop.concept src on s.condition_source_value = replace(src.concept_code, '.', '' )
-                            and src.domain_id like '%Meas%'
-                            and coalesce(s.condition_code_source_type, src.vocabulary_id ) = src.vocabulary_id
-                            and src.invalid_reason is null
-            left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-                      			and cr.relationship_id = 'Maps to'
-                      			and cr.invalid_reason is null
-            left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-                      			and tar.standard_concept = 'S'
-                      			and tar.invalid_reason is null
-            left join omop.concept_relationship crv on src.concept_id = crv.concept_id_1
-                      			and crv.relationship_id = 'Maps to value'
-                      			and crv.invalid_reason is null
-            left join omop.concept val on crv.concept_id_2 = val.concept_id
-                      			and val.standard_concept = 'S'
-                      			and val.invalid_reason is null
+            join omop.concept_measurement src on s.condition_source_value = src.clean_concept_code
+                and coalesce(s.condition_code_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
             left join omop.provider pr on s.provider_source_value = pr.provider_source_value
-		where s.start_date is not null
-		and s.load_id = v_loadid
+            where s.start_date is not null
+            and s.load_id = v_loadid
         ) a
         ;
 
@@ -217,36 +195,22 @@ begin
         (
             select 
                 p.person_id as person_id
-                , coalesce(tar.concept_id, 0 )  as observation_concept_id
+                , coalesce(src.tar_concept_id, 0 )  as observation_concept_id
                 , s.start_date as observation_date
                 , 38000280 as observation_type_concept_id  -- 'Observation recorded from EHR'  -- TODO: may need to be changed
-                , val.concept_id as value_as_concept_id
+                , src.val_concept_id as value_as_concept_id
                 , v.visit_occurrence_id as visit_occurrence_id
                 , s.condition_source_value as observation_source_value
-                , coalesce(src.concept_id, 0) as observation_source_concept_id
+                , coalesce(src.src_concept_id, 0) as observation_source_concept_id
                 , pr.provider_id
                 , s.id as x_srcid
-		, s.load_id as x_srcloadid
+                , s.load_id as x_srcloadid
                 , 'STAGE_CONDITION' as x_srcfile
             from etl.stage_condition_temp s
             join omop.person p on p.person_source_value = s.person_source_value
             left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-            join omop.concept src on s.condition_source_value = replace(src.concept_code, '.', '' )
-                    and src.domain_id like '%Obs%'
-                    and coalesce(s.condition_code_source_type, src.vocabulary_id ) = src.vocabulary_id
-                    and src.invalid_reason is null
-            left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-              			and cr.relationship_id = 'Maps to'
-              			and cr.invalid_reason is null
-            left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-              			and tar.standard_concept = 'S'
-              			and tar.invalid_reason is null
-            left join omop.concept_relationship crv on src.concept_id = crv.concept_id_1
-              			and crv.relationship_id = 'Maps to value'
-              			and crv.invalid_reason is null
-            left join omop.concept val on crv.concept_id_2 = val.concept_id
-              			and val.standard_concept = 'S'
-              			and val.invalid_reason is null
+            join omop.concept_observation src on s.condition_source_value = src.clean_concept_code
+                and coalesce(s.condition_code_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
             left join omop.provider pr on s.provider_source_value = pr.provider_source_value
 		where s.start_date is not null
 		and s.load_id = v_loadid
@@ -278,9 +242,9 @@ begin
 		visit_occurrence_id,
 		procedure_source_value,
 		procedure_source_concept_id,
-                x_srcid,
-                x_srcloadid,
-                x_srcfile
+        x_srcid,
+        x_srcloadid,
+        x_srcfile
 	)
 	select
 		nextval('omop.procedure_occurrence_id_seq') as procedure_occurrence_id,
@@ -292,36 +256,28 @@ begin
 		visit_occurrence_id,
 		procedure_source_value,
 		procedure_source_concept_id,
-                x_srcid,
-                x_srcloadid,
-                x_srcfile
+        x_srcid,
+        x_srcloadid,
+        x_srcfile
 	from
         (
           select
             p.person_id as person_id
-            , coalesce(tar.concept_id, 0 ) as procedure_concept_id
+            , coalesce(src.tar_concept_id, 0 ) as procedure_concept_id
             , s.start_date as procedure_date
             , 42865906 as procedure_type_concept_id
             , coalesce( pr.provider_id, v.provider_id, 0 ) as provider_id
             , coalesce( v.visit_occurrence_id, 0 ) as visit_occurrence_id
             , s.condition_source_value as procedure_source_value
-            , coalesce(src.concept_id, 0) as procedure_source_concept_id
+            , coalesce(src.src_concept_id, 0) as procedure_source_concept_id
             , s.id as x_srcid
             , s.load_id as x_srcloadid
             , 'STAGE_CONDITION' as x_srcfile
         from etl.stage_condition_temp s
         join omop.person p on p.person_source_value = s.person_source_value
         left join omop.visit_occurrence v on s.visit_source_value = v.visit_source_value
-        join omop.concept src on s.condition_source_value = replace(src.concept_code, '.', '' )
-                        and src.domain_id like '%Proc%'  -- full join only want proc matches.
-                        and coalesce(s.condition_code_source_type, src.vocabulary_id ) = src.vocabulary_id
-			                  and src.invalid_reason is null
-        left join omop.concept_relationship cr on src.concept_id = cr.concept_id_1
-                        and cr.relationship_id = 'Maps to'
-			                  and cr.invalid_reason is null
-        left join omop.concept tar on cr.concept_id_2 = tar.concept_id
-                        and tar.standard_concept = 'S'
-                  			and tar.invalid_reason is null
+        join omop.concept_procedure src on s.condition_source_value = src.clean_concept_code
+                and coalesce(s.condition_code_source_type, src.src_vocabulary_id ) = src.src_vocabulary_id
         left join omop.provider pr on s.provider_source_value = pr.provider_source_value
 		where s.start_date is not null
 		and s.load_id = v_loadid
