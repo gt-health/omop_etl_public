@@ -1,0 +1,7 @@
+-- postgres omop_etl v2 installation and setup
+
+The installation and setup for the omop_etl process requires building the omop and the etl database schemas. the omop schema of the etl process is slightly different from the generic omop schema. Columns have been added to some tables to assist in auditing and maintaining the provenance of the etl load process. Some temporary tables have been added to assist in the loading process, but they are cleared out after each run. If an existing OMOP schema already exists, it will need to be modified to add the new columns and tables (TBD ).
+
+The create_etl_tables.sql file contains the DB code to create the schemas, tables and functions needed to created the etl schema. It can be ran via psql or other method:
+psql -d $DBNAME < create_etl_tables.sql
+
