@@ -13,18 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-create sequence omop.location_id_seq ;  
-create sequence omop.care_site_id_seq ;
-create sequence omop.cohort_id_seq ;
-create sequence omop.drug_exposure_id_seq;
-create sequence omop.visit_occurrence_id_seq;
-create sequence omop.condition_occurrence_id_seq;
-create sequence omop.procedure_occurrence_id_seq;
-create sequence omop.observation_id_seq;
-create sequence omop.obs_period_id_seq;
-create sequence omop.provider_id_seq;
-create sequence omop.person_id_seq;
-create sequence omop.measurement_id_seq;
-create sequence omop.device_exposure_id_seq;
+-- deprecated and added to omop cdm script
 
 

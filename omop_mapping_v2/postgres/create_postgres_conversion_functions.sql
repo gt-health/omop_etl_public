@@ -13,40 +13,4 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-create or replace function etl.convert_to_integer(v_input text)
-returns integer
-language plpgsql
-as
-$$
-declare v_int_value integer default null;
-
-begin
-	begin
-		v_int_value := cast(v_input as int );
-	exception when others then
-	raise notice 'Invalid int value: "%". Returning NULL.', v_input;
-	return null;
-	end;
-return v_int_value;
-end;
-$$	
-;
-
-create or replace function etl.convert_to_numeric(v_input text)
-returns numeric
-language plpgsql
-as
-$$
-declare v_int_value numeric default null;
-
-begin
-	begin
-		v_int_value := cast(v_input as numeric );
-	exception when others then
-	raise notice 'Invalid numeric value: "%". Returning NULL.', v_input;
-	return null;
-	end;
-return v_int_value;
-end;
-$$
-;
+-- deprecated and added to create etl tables script

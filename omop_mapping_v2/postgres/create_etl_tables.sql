@@ -13,7 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
--- oracle
+
+
 create schema if not exists etl;
 
 CREATE TABLE etl.stage_care_site
@@ -446,14 +447,73 @@ CREATE TABLE etl.stage_visit
 ALTER TABLE etl.stage_visit
    ADD CONSTRAINT visit_source_value_unique UNIQUE (visit_source_value);
 
--- create sequence etl.stg_visit_id_seq;
 
-create table etl.load_info
+-- table that contains information about each of the etl loading operations
+-- load_id drives the etl load process
+create table if not exists etl.load_info
 (
-	load_id	serial,
-	load_name		varchar(100),
-	load_description	varchar(1000),
-	status			int
+    load_id serial,
+    load_name       varchar(100),
+    load_description    varchar(1000),
+    status          int
 );
--- create sequence etl.stg_load_id_seq;
+
+-- creates the initial record in etl.load_ingo and returns the load_id
+create or replace function 
+   etl.start_etl_load( p_load_name varchar(100), p_load_description varchar(1000))
+  returns integer
+  language plpgsql
+as
+$body$
+begin
+  insert into etl.load_info( load_id, load_name, load_description, status )
+    values( default, p_load_name, p_load_description, 0)
+  returning load_id;
+
+end;
+$body$
+;
+
+-- table used for logging
+create table if not exists etl.logmessage
+(
+  msg_id serial,
+  logtime timestamp default clock_timestamp(),
+  process varchar(50),
+  step  varchar(200),
+  details varchar(200)
+);
+
+
+-- logging functions
+
+CREATE OR REPLACE FUNCTION 
+  etl.logm(process character varying, step character varying, details integer)
+  RETURNS void
+  LANGUAGE plpgsql
+AS
+$body$
+BEGIN
+
+   INSERT INTO etl.logmessage (process, step, details)
+        VALUES (process, step, details);
+END;
+$body$
+;
+
+
+CREATE OR REPLACE FUNCTION 
+  etl.logm(process character varying, step character varying, details character varying)
+  RETURNS void
+  LANGUAGE plpgsql
+AS
+$body$
+BEGIN
+
+   INSERT INTO etl.logmessage (process, step, details)
+        VALUES (process, step, details);
+END;
+$body$
+ ;
+
 

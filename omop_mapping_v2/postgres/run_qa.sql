@@ -13,7 +13,4 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-select omop.qa_condition_load();
-select omop.qa_procedure_load();
-select omop.qa_lab_load();
-select omop.qa_rx_load();
+-- removed, use run_etl_load instead

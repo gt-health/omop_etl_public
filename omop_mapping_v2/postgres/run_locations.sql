@@ -13,4 +13,4 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-select omop.generic_create_locations(1);
+-- removed, use run_etl_load instead

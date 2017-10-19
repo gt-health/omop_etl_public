@@ -1,4 +1,6 @@
--- clean etl tables
+
+-- clean etl tables 
+-- just a helper script to use during testing and ETL development
 
 -- you may want to keep the logmessage history, if not, uncomment below
 
@@ -16,10 +18,14 @@ alter sequence etl.stage_condition_id_seq restart;
 
 
 truncate table etl.stage_condition ;
+truncate table etl.stage_condition_temp ;
 truncate table etl.stage_death ;
 truncate table etl.stage_lab ;
+truncate table etl.stage_lab_temp ;
 truncate table etl.stage_person ;
 truncate table etl.stage_procedure ;
+truncate table etl.stage_procedure_temp ;
 truncate table etl.stage_provider ;
 truncate table etl.stage_rx ;
+truncate table etl.stage_rx_tmp ;
 truncate table etl.stage_visit ;

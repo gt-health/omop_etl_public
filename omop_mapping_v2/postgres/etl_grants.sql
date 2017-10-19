@@ -13,25 +13,4 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-grant select, delete, insert, update  on etl.stage_condition to omop  ;
-grant select, delete, insert, update on etl.stage_condition_error to omop   ;
-grant select, delete, insert, update on etl.stage_condition_temp  to omop  ;
-
-grant select, delete, insert, update  on etl.stage_procedure  to omop  ;
-grant select, delete, insert, update  on etl.stage_procedure_error  to omop  ;
-grant select, delete, insert, update  on etl.stage_procedure_temp  to omop  ;
-
-grant select, delete, insert, update  on etl.stage_lab to omop   ;
-grant select, delete, insert, update on etl.stage_lab_error to omop   ;
-grant select, delete, insert, update on etl.stage_lab_temp to omop   ;
-
-grant select, delete, insert, update on etl.stage_rx to omop   ;
-grant select, delete, insert, update  on etl.stage_rx_error to omop   ;
-grant select, delete, insert, update  on etl.stage_rx_temp to omop   ;
-
-grant select, delete, insert, update  on etl.stage_person to omop   ;
-grant select, delete, insert, update  on etl.stage_care_site to omop   ;
-grant select, delete, insert, update on etl.stage_death to omop   ;
-
-grant select, delete, insert, update  on etl.stage_provider to omop   ;
-grant select, delete, insert, update  on etl.stage_visit  to omop  ;
+-- deprecated and added to create etl tables script

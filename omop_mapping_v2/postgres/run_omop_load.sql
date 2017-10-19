@@ -13,13 +13,4 @@
    See the License for the specific language governing permissions and
    limitations under the License. 
 */
-select omop.generic_create_locations();
-select omop.generic_create_caresites();
-select omop.generic_create_providers();
-select omop.generic_create_person();
-select omop.generic_create_deaths();
-select omop.generic_create_visits();
-select omop.generic_create_all_conditions();
-select omop.generic_create_all_procedures();
-select omop.generic_create_measurements();
-select omop.generic_create_drug_exposures();
+-- deprecated, use run_etl_load function instead
