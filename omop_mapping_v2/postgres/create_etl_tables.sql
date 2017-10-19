@@ -516,4 +516,64 @@ END;
 $body$
  ;
 
+grant select, delete, insert, update  on etl.stage_condition to omop  ;
+grant select, delete, insert, update on etl.stage_condition_error to omop   ;
+grant select, delete, insert, update on etl.stage_condition_temp  to omop  ;
 
+grant select, delete, insert, update  on etl.stage_procedure  to omop  ;
+grant select, delete, insert, update  on etl.stage_procedure_error  to omop  ;
+grant select, delete, insert, update  on etl.stage_procedure_temp  to omop  ;
+
+grant select, delete, insert, update  on etl.stage_lab to omop   ;
+grant select, delete, insert, update on etl.stage_lab_error to omop   ;
+grant select, delete, insert, update on etl.stage_lab_temp to omop   ;
+
+grant select, delete, insert, update on etl.stage_rx to omop   ;
+grant select, delete, insert, update  on etl.stage_rx_error to omop   ;
+grant select, delete, insert, update  on etl.stage_rx_temp to omop   ;
+
+grant select, delete, insert, update  on etl.stage_person to omop   ;
+grant select, delete, insert, update  on etl.stage_care_site to omop   ;
+grant select, delete, insert, update on etl.stage_death to omop   ;
+
+grant select, delete, insert, update  on etl.stage_provider to omop   ;
+grant select, delete, insert, update  on etl.stage_visit  to omop  ;
+
+
+create or replace function etl.convert_to_integer(v_input text)
+returns integer
+language plpgsql
+as
+$$
+declare v_int_value integer default null;
+
+begin
+   begin
+      v_int_value := cast(v_input as int );
+   exception when others then
+   raise notice 'Invalid int value: "%". Returning NULL.', v_input;
+   return null;
+   end;
+return v_int_value;
+end;
+$$ 
+;
+
+create or replace function etl.convert_to_numeric(v_input text)
+returns numeric
+language plpgsql
+as
+$$
+declare v_int_value numeric default null;
+
+begin
+   begin
+      v_int_value := cast(v_input as numeric );
+   exception when others then
+   raise notice 'Invalid numeric value: "%". Returning NULL.', v_input;
+   return null;
+   end;
+return v_int_value;
+end;
+$$
+;
