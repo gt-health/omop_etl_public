@@ -147,10 +147,10 @@ INSERT INTO omop.observation_temp
             p.person_id as person_id
             , coalesce(src.tar_concept_id, 0 )  as observation_concept_id
             , coalesce(s.procedure_date, v.visit_start_date) as observation_date
-            , extract( hour from s.procedure_date ) || ':' ||
-                extract( minute from s.procedure_date ) || ':' ||
-                extract( second from s.procedure_date ),
-                'HH24:MI:SS' as observation_time
+            , trim( to_char(extract( hour from s.procedure_date ), '09' ) ) || ':' ||
+                trim( to_char(extract( minute from s.procedure_date ), '09' ) ) || ':' ||
+                trim( to_char(extract( second from s.procedure_date ), '09' ) )
+                 as observation_time
             , 38000280 as observation_type_concept_id  -- 'Observation recorded from EHR'  -- TODO: may need to be changed
             , coalesce(mod.concept_id,0) as qualifier_concept_id
             , src.val_concept_id as value_as_concept_id
@@ -193,6 +193,7 @@ and s.load_id = v_loadid
             person_id,
             measurement_concept_id,
             measurement_date,
+	    measurement_time,
             measurement_type_concept_id,
             value_as_concept_id,
             visit_occurrence_id,
@@ -208,6 +209,7 @@ and s.load_id = v_loadid
             , person_id
             , measurement_concept_id
             , measurement_date
+	    , measurement_time
             , measurement_type_concept_id
             , value_as_concept_id
             , visit_occurrence_id
@@ -223,6 +225,10 @@ and s.load_id = v_loadid
                 p.person_id as person_id
                 , coalesce(src.tar_concept_id, 0 )  as measurement_concept_id
                 , coalesce( s.procedure_date, v.visit_start_date ) as measurement_date
+		, trim( to_char(extract( hour from s.procedure_date ), '09' ) ) || ':' ||
+                  trim( to_char(extract( minute from s.procedure_date ), '09' ) ) || ':' ||
+                  trim( to_char(extract( second from s.procedure_date ), '09' ) )
+                  as measurement_time
                 , 44818701 as measurement_type_concept_id  -- 'From physical examination' -- TODO: may need to be changed
                 , src.val_concept_id as value_as_concept_id
                 , v.visit_occurrence_id as visit_occurrence_id
