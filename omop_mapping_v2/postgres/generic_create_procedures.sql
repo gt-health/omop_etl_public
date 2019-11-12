@@ -365,7 +365,7 @@ and s.load_id = v_loadid
           	coalesce( pr.provider_id, 0 )  as provider_id,
           	v.visit_occurrence_id as visit_occurrence_id,
           	s.procedure_source_value as device_source_value,
-          	coalesce( src.concept_id, 0) as device_source_concept_id,
+          	coalesce( src.src_concept_id, 0) as device_source_concept_id,
              s.id as x_srcid,
              s.load_id as x_srcloadid,
             'STAGE_PROCEDURE' as x_srcfile
